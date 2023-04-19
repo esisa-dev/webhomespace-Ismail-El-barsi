@@ -25,6 +25,21 @@ def login():
             return render_template('login.html', error=error_msg)
     else:
         return render_template('login.html')
+    
+@app.route("/create_user", methods=['GET', 'POST'])
+def create_user():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users:
+            error_msg = "Username already taken"
+            return render_template('create_user.html', error=error_msg)
+        else:
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            users[username] = hashed_password
+            return redirect(url_for('login'))
+    else:
+        return render_template('create_user.html')
 
 @app.route("/home")
 def home():

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Login</title>
+    <title>Create User</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
       rel="stylesheet"
@@ -10,8 +10,8 @@
   </head>
   <body>
     <div class="container mt-5">
-      <h1 class="mb-4">Login</h1>
-      <form method="POST" action="{{ url_for('login') }}">
+      <h1 class="mb-4">Create User</h1>
+      <form method="POST" action="{{ url_for('create_user') }}">
         <div class="form-group">
           <label for="username">Username:</label>
           <input
@@ -32,16 +32,11 @@
             required
           />
         </div>
-        <button type="submit" class="btn btn-primary">Login</button>
+        <button type="submit" class="btn btn-primary">Create User</button>
+        {% if error %}
+        <p style="color: red">{{ error }}</p>
+        {% endif %}
       </form>
-      {% if error %}
-      <p style="color: red">{{ error }}</p>
-      {% endif %}
-      <div class="mt-3">
-        <a href="{{ url_for('create_user') }}" class="btn btn-secondary"
-          >Create a new user</a
-        >
-      </div>
     </div>
   </body>
 </html>
