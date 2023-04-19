@@ -1,11 +1,36 @@
-from flask import Flask, render_template, request, url_for, abort
+from flask import Flask, render_template, request, url_for, abort, make_response,redirect
 import os
+import hashlib
 
 
 app = Flask(__name__)
+users = {
+    'user': hashlib.sha256('1234'.encode()).hexdigest()
+}
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+    
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+        if username in users and users[username] == hashed_password:
+            resp = make_response(redirect(url_for('home')))
+            resp.set_cookie('username', username)
+            return resp
+        else:
+            error_msg = "Invalid username or password"
+            return render_template('login.html', error=error_msg)
+    else:
+        return render_template('login.html')
+
+@app.route("/home")
 def home():
+    username = request.cookies.get('username')
+    if not username:
+        return redirect(url_for('login'))
     path = os.path.expanduser('~') 
     files = [f for f in os.listdir(path) if not f.startswith('.')]  
     elements = []
