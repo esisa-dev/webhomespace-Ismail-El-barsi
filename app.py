@@ -1,22 +1,22 @@
-from flask import Flask, render_template, request, url_for, abort, make_response,redirect
+from flask import Flask, render_template, request, url_for, abort, make_response, redirect
 import os
-import hashlib
-
-
+import subprocess
+import spwd
+import crypt
 app = Flask(__name__)
-users = {
-    'user': hashlib.sha256('1234'.encode()).hexdigest()
-}
+app.secret_key = 'secret_key'
 
 @app.route("/", methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-    
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-        if username in users and users[username] == hashed_password:
+        try:
+            hashed_password = spwd.getspnam(username).sp_pwd
+        except KeyError:
+            error_msg = "Invalid username or password"
+            return render_template('login.html', error=error_msg)
+        if hashed_password == crypt.crypt(password, hashed_password):
             resp = make_response(redirect(url_for('home')))
             resp.set_cookie('username', username)
             return resp
@@ -25,18 +25,21 @@ def login():
             return render_template('login.html', error=error_msg)
     else:
         return render_template('login.html')
-    
+
 @app.route("/create_user", methods=['GET', 'POST'])
 def create_user():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        if username in users:
+        try:
+            subprocess.check_output(['id', '-u', username])
             error_msg = "Username already taken"
             return render_template('create_user.html', error=error_msg)
-        else:
-            hashed_password = hashlib.sha256(password.encode()).hexdigest()
-            users[username] = hashed_password
+        except subprocess.CalledProcessError:
+            command = f"useradd -m -s /bin/bash {username}"
+            os.system(command)
+            command = f"echo '{username}:{password}' | chpasswd"
+            os.system(command)
             return redirect(url_for('login'))
     else:
         return render_template('create_user.html')
