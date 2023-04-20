@@ -46,8 +46,11 @@ def home():
     username = request.cookies.get('username')
     if not username:
         return redirect(url_for('login'))
-    path = os.path.expanduser('~') 
+    path = os.path.expanduser('~')
     files = [f for f in os.listdir(path) if not f.startswith('.')]
+
+    num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
+
     elements = []
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
@@ -60,15 +63,18 @@ def home():
         else:
             elements.append((file, isdir, None))
 
-    return render_template('home.html', elements=elements, folder=path)
+    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs)
 
 @app.route('/<path:path>/')
 def subfolder(path):
     path = os.path.join(os.path.expanduser('~'), path)
     try:
-        files = [f for f in os.listdir(path) if not f.startswith('.')]  # Exclude hidden files and folders
+        files = [f for f in os.listdir(path) if not f.startswith('.')] 
     except FileNotFoundError:
         abort(404)
+
+    num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
+
     elements = []
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
@@ -80,19 +86,20 @@ def subfolder(path):
             elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
-    return render_template('home.html', elements=elements)
+
+    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs)
 
 @app.route('/file/<path:path>/')
 def show_file(path):
-    full_path = os.path.join(os.path.expanduser('~'), path)
+    path = os.path.join(os.path.expanduser('~'), path)
     try:
-        with open(full_path, 'r') as f:
+        with open(path, 'r') as f:
             content = f.read()
     except Exception as e:
         return f"Error: {e}"
     return render_template('file.html', content=content)
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=9090, debug=True)
+    app.run(host="0.0.0.0",debug=True)
     
 
