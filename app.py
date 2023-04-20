@@ -50,6 +50,7 @@ def home():
     files = [f for f in os.listdir(path) if not f.startswith('.')]
 
     num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
+    num_txt_files = sum(f.endswith('.txt') for f in files)
 
     elements = []
     for file in files:
@@ -63,7 +64,7 @@ def home():
         else:
             elements.append((file, isdir, None))
 
-    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs)
+    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs, num_txt_files=num_txt_files)
 
 @app.route('/<path:path>/')
 def subfolder(path):
@@ -74,6 +75,7 @@ def subfolder(path):
         abort(404)
 
     num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
+    num_txt_files = sum([1 for f in files if f.endswith('.txt')])
 
     elements = []
     for file in files:
@@ -87,7 +89,7 @@ def subfolder(path):
         else:
             elements.append((file, isdir, None))
 
-    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs)
+    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs, num_txt_files=num_txt_files)
 
 @app.route('/file/<path:path>/')
 def show_file(path):
