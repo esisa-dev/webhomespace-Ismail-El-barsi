@@ -47,22 +47,26 @@ def home():
     if not username:
         return redirect(url_for('login'))
     path = os.path.expanduser('~') 
-    files = [f for f in os.listdir(path) if not f.startswith('.')]  
+    files = [f for f in os.listdir(path) if not f.startswith('.')]
     elements = []
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
         if isdir:
             link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')))
             elements.append((file, isdir, link))
+        elif file.endswith('.txt'):
+            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')), filename=file)
+            elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
+
     return render_template('home.html', elements=elements, folder=path)
 
 @app.route('/<path:path>/')
 def subfolder(path):
     path = os.path.join(os.path.expanduser('~'), path)
     try:
-        files = [f for f in os.listdir(path) if not f.startswith('.')]  
+        files = [f for f in os.listdir(path) if not f.startswith('.')]  # Exclude hidden files and folders
     except FileNotFoundError:
         abort(404)
     elements = []
@@ -71,9 +75,22 @@ def subfolder(path):
         if isdir:
             link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')))
             elements.append((file, isdir, link))
+        elif file.endswith('.txt'):
+            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')), filename=file)
+            elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
     return render_template('home.html', elements=elements)
+
+@app.route('/file/<path:path>/')
+def show_file(path):
+    full_path = os.path.join(os.path.expanduser('~'), path)
+    try:
+        with open(full_path, 'r') as f:
+            content = f.read()
+    except Exception as e:
+        return f"Error: {e}"
+    return render_template('file.html', content=content)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=9090, debug=True)
