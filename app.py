@@ -87,10 +87,10 @@ def subfolder(path):
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
         if isdir:
-            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('/home')))
+            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")))
             elements.append((file, isdir, link))
         elif file.endswith('.txt'):
-            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('/home')), filename=file)
+            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")), filename=file)
             elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
