@@ -61,8 +61,7 @@ def home():
 
     num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
     num_txt_files = sum(f.endswith('.txt') for f in files)
-    total_size = round(shutil.disk_usage(path).used / (1024 * 1024), 0)
-
+    total_size = round(sum(os.path.getsize(os.path.join(path, f)) for f in files) / (1024 * 1024), 0)
     elements = []
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
@@ -122,13 +121,6 @@ def logout():
     resp.delete_cookie('username')
     return resp
 
-def get_dir_size(path):
-    total_size = 0
-    for dirpath,filenames in os.walk(path):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
-    return round(total_size / (1024 * 1024), 1)
 
 
 if __name__ == "__main__":
