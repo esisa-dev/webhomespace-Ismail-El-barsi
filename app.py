@@ -49,7 +49,9 @@ def home():
     username = request.cookies.get('username')
     if not username:
         return redirect(url_for('login'))
-    path = os.path.expanduser('~')
+    
+    path = os.path.expanduser(f"~{username}")
+
     files = [f for f in os.listdir(path) if not f.startswith('.')]
 
     num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
@@ -59,10 +61,10 @@ def home():
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
         if isdir:
-            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')))
+            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")))
             elements.append((file, isdir, link))
         elif file.endswith('.txt'):
-            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')), filename=file)
+            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")), filename=file)
             elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
@@ -71,7 +73,8 @@ def home():
 
 @app.route('/<path:path>/')
 def subfolder(path):
-    path = os.path.join(os.path.expanduser('~'), path)
+    username = request.cookies.get('username')
+    path = os.path.join(os.path.expanduser(f"~{username}"), path)
     try:
         files = [f for f in os.listdir(path) if not f.startswith('.')] 
     except FileNotFoundError:
@@ -84,10 +87,10 @@ def subfolder(path):
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
         if isdir:
-            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')))
+            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('/home')))
             elements.append((file, isdir, link))
         elif file.endswith('.txt'):
-            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('~')), filename=file)
+            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser('/home')), filename=file)
             elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
@@ -96,7 +99,8 @@ def subfolder(path):
 
 @app.route('/file/<path:path>/')
 def show_file(path):
-    path = os.path.join(os.path.expanduser('~'), path)
+    username = request.cookies.get('username')
+    path = os.path.join(os.path.expanduser(f"~{username}"), path)
     try:
         with open(path, 'r') as f:
             content = f.read()
