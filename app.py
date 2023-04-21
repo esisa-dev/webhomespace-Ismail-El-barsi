@@ -3,6 +3,7 @@ import os
 import subprocess
 import spwd
 import crypt
+import shutil
 app = Flask(__name__)
 app.secret_key = 'secret_key'
 
@@ -60,20 +61,22 @@ def home():
 
     num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
     num_txt_files = sum(f.endswith('.txt') for f in files)
+    total_size = round(shutil.disk_usage(path).used / (1024 * 1024), 0)
 
     elements = []
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
         if isdir:
-            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")))
+            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), path))
             elements.append((file, isdir, link))
         elif file.endswith('.txt'):
-            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")), filename=file)
+            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), path), filename=file)
             elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
 
-    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs, num_txt_files=num_txt_files)
+    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs, num_txt_files=num_txt_files, total_size=total_size)
+
 
 @app.route('/<path:path>/')
 def subfolder(path):
@@ -86,20 +89,21 @@ def subfolder(path):
 
     num_dirs = sum(os.path.isdir(os.path.join(path, f)) for f in files)
     num_txt_files = sum([1 for f in files if f.endswith('.txt')])
+    total_size = round(sum(os.path.getsize(os.path.join(path, f)) for f in files) / (1024 * 1024), 0)
 
     elements = []
     for file in files:
         isdir = os.path.isdir(os.path.join(path, file))
         if isdir:
-            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")))
+            link = url_for('subfolder', path=os.path.relpath(os.path.join(path, file), path))
             elements.append((file, isdir, link))
         elif file.endswith('.txt'):
-            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), os.path.expanduser(f"~{username}")), filename=file)
+            link = url_for('show_file', path=os.path.relpath(os.path.join(path, file), path), filename=file)
             elements.append((file, isdir, link))
         else:
             elements.append((file, isdir, None))
 
-    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs, num_txt_files=num_txt_files)
+    return render_template('home.html', elements=elements, folder=path, num_dirs=num_dirs, num_txt_files=num_txt_files, total_size=total_size)
 
 @app.route('/file/<path:path>/')
 def show_file(path):
@@ -117,6 +121,14 @@ def logout():
     resp = make_response(redirect(url_for('login')))
     resp.delete_cookie('username')
     return resp
+
+def get_dir_size(path):
+    total_size = 0
+    for dirpath,filenames in os.walk(path):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
+    return round(total_size / (1024 * 1024), 1)
 
 
 if __name__ == "__main__":
