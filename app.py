@@ -6,7 +6,11 @@ import crypt
 app = Flask(__name__)
 app.secret_key = 'secret_key'
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route('/')
+def index():
+    return render_template('login.html')
+
+@app.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
@@ -107,6 +111,13 @@ def show_file(path):
     except Exception as e:
         return f"Error: {e}"
     return render_template('file.html', content=content)
+
+@app.route('/logout')
+def logout():
+    resp = make_response(redirect(url_for('login')))
+    resp.delete_cookie('username')
+    return resp
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0",debug=True)
