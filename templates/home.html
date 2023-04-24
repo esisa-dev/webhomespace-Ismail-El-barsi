@@ -46,20 +46,38 @@
     
 
     <div class="container mt-5 mb-3 bg-dark">
-      <ul class="list-group">
-        {% for element in elements %} {% if element[1] %}
-        <li class="list-group-item bg-dark">
-          <a href="{{ element[0] }}/">{{ element[0] }}
-        </li>
-        {% else %} {% if element[0].endswith('.txt') %}
-        <li class="list-group-item bg-dark">
-          <a href="{{ element[2] }}"><span style="color: red;">{{ element[0] }}</span></a>
-        </li>
-        {% else %}
-        <li class="list-group-item bg-dark">{{ element[0] }}</li>
-        {% endif %} {% endif %} {% endfor %}
-      </ul>
+      <table class="table table-dark">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Date de modification</th>
+            <th>Taille</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for element in elements %}
+            {% if element[1] %}
+              <tr>
+                <td><a href="{{ element[0] }}/">{{ element[0] }}</a></td>
+                <td>{{ element[3]}}</td>
+                <td>{{ element[4]}}</td>
+              </tr>
+              {% else %} {% if element[0].endswith('.txt') %}
+              <tr>
+                <td><a href="{{ element[2] }}"><span style="color: red;">{{ element[0] }}</span></a></td>
+                <td>{{ element[3]}}</td>
+                <td>{{ element[4]}}</td>
+            {% else %}
+              <tr>
+                <td>{{ element[0] }}</a></td>
+                <td>{{ element[2]}}</td>
+                <td>{{ element[3]}}</td>
+              </tr>
+              {% endif %} {% endif %} {% endfor %}
+        </tbody>
+      </table>
     </div>
+    
     
   </body>
 </html>
